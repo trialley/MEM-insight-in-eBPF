@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>haha</title>
+</head>
+
+<body>
+	<div id="app">
+		<el-container>
+			<el-aside width="200px">
+
+
+
+				<!-- <el-col :span="4"> -->
+				<!-- 插入框 -->
+				<el-form ref="form" :model="form" label-width="40px">
+					<el-form-item label="书号">
+						<el-input v-model="form.bookID"></el-input>
+					</el-form-item>
+					<el-form-item label="书名">
+						<el-input v-model="form.bookName"></el-input>
+					</el-form-item>
+					<el-form-item label="作者">
+						<el-input v-model="form.bookAuthor"></el-input>
+					</el-form-item>
+					<el-form-item label="余量">
+						<el-input v-model="form.bookLeftNum"></el-input>
+					</el-form-item>
+					<el-form-item label="总量">
+						<el-input v-model="form.bookTotalNum"></el-input>
+					</el-form-item>
+				</el-form>
+				<div width="200px">
+					<el-button type="primary" @click="borrowItem">借阅</el-button>
+				</div>
+				<div width="200px">
+					<el-button type="primary" @click="returnItem">归还</el-button>
+				</div>
+				<div width="200px">
+					<el-button type="primary" @click="createItem">采编入库</el-button>
+				</div>
+				<div width="200px">
+					<el-button type="danger" @click="deleteItem">清除库存</el-button>
+				</div>
+				<div width="200px">
+					<el-button type="primary" @click="getItem">查询</el-button>
+				</div>
+				<!-- </el-col> -->
+			</el-aside>
+			<el-container>
+				<el-header height="50%vh">
+					<div style="height:50vh;" id="display"></div>
+				</el-header>
+				<el-main>
+					<el-table :data="tableData" border max-height="340" style="width: 100%">
+						<el-table-column prop="bookID" label="bookID" width="180">
+						</el-table-column>
+						<el-table-column prop="bookName" label="bookName" width="180">
+						</el-table-column>
+						<el-table-column prop="bookAuthor" label="bookAuthor">
+						</el-table-column>
+						<el-table-column prop="bookLeftNum" label="bookLeftNum">
+						</el-table-column>
+						<el-table-column prop="bookTotalNum" label="bookTotalNum">
+						</el-table-column>
+					</el-table>
+				</el-main>
+			</el-container>
+		</el-container>
+		<!-- <el-row :gutter="0">
+
+			<el-col :span="20">
+			</el-col>
+		</el-row> -->
+	</div>
+</body>
+<!-- <script src="./static/jquery-3.2.1.min.js"></script> -->
+<!-- <link href="./static/bootstrap-grid.min.css" rel="stylesheet">
+    <link href="./static/bootstrap-grid.min.css" rel="stylesheet">
+    <link href="./static/bootstrap.min.css" rel="stylesheet">
+    <script src="./static/bootstrap.min.js"></script>
+    <script src="./static/bootstrap.bundle.min.js"></script> -->
+<script src="./static/echarts.min.js"></script>
+<!-- 引入样式 -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 先引入 Vue -->
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="https://cdn.staticfile.org/axios/0.18.0/axios.min.js"></script>
+<script>
+	var optionTemplate = {
+		"series": [{
+
+			"type": "tree",
+			"data": [
+				{
+					"name": "root",
+					"children": [
+						{
+							"name": "黑龙江",
+							"children": [
+								{
+									"name": "哈尔滨",
+									"value": 1200
+								}, {
+									"name": "大庆",
+									"value": 1500
+								}
+							]
+						}, {
+							"name": "广东",
+							"children": [{
+								"name": "广州"
+							}, {
+								"name": "深圳",
+								"value": 3600
+							}, {
+								"name": "珠海",
+								"value": 2700
+							}]
+						}, {
+							"name": "台湾",
+							"children": [{
+								"name": "台北",
+								"value": 800
+							}, {
+								"name": "高雄",
+								"value": 600
+							}]
+						}, {
+							"name": "新疆",
+							"children": [{
+								"name": "乌鲁木齐",
+								"value": 300
+							}]
+						}
+					]
+				}
+			],
+			"top": "20%",
+			"left": "7%",
+			"bottom": "20%",
+			"right": "20%",
+			"symbolSize": [90, 40],
+
+			itemStyle: {
+				color: "white"
+			},
+
+			"expandAndCollapse": false,
+			"animationDuration": 550,
+			"animationDurationUpdate": 750,
+			"orient": "vertical",
+			"symbol": "Rect"
+
+
+
+		}]
+	};
+
+	new Vue({
+		el: '#app',
+		data() {
+			return {
+				form: {
+					bookID: '',
+					bookName: '',
+					bookLeftNum: '',
+					bookAuthor: '',
+					bookTotalNum: ''
+				},
+				tableData: [{
+					bookID: '4',
+					bookName: '4',
+					bookLeftNum: '4',
+					bookAuthor: '4',
+					bookTotalNum: '4'
+				}]
+			}
+		},
+		created: function () {
+			setTimeout(this.updateEchart, 1000);
+		},
+		methods: {
+			borrowItem() {
+				//发送 post 请求
+				var _form = JSON.stringify(this.form);
+				console.log(_form);
+				_this = this;
+				axios.post(
+					'http://localhost:7998/borrowItem',
+					_form
+				).then(function (res) {
+					console.log(res);
+					_this.updateEchart();
+				}).catch(function (error) { // 请求失败处理
+					console.log(error);
+				});
+			},
+			getItem() {
+				//发送 post 请求
+				var _form = JSON.stringify(this.form);
+				console.log(_form);
+				_this = this;
+				axios.post(
+					'http://localhost:7998/getItem',
+					_form
+				).then(function (res) {
+					console.log(res);
+
+					alert(JSON.stringify(res.data));
+				}).catch(function (error) { // 请求失败处理
+					console.log(error);
+				});
+			},
+			returnItem() {
+				//发送 post 请求
+				var _form = JSON.stringify(this.form);
+				console.log(_form);
+				_this = this;
+				axios.post(
+					'http://localhost:7998/returnItem',
+					_form
+				).then(function (res) {
+					console.log(res);
+					_this.updateEchart();
+				}).catch(function (error) { // 请求失败处理
+					console.log(error);
+				});
+			},
+			deleteItem() {
+				//发送 post 请求
+				var _form = JSON.stringify(this.form);
+				console.log(_form);
+				_this = this;
+				axios.post(
+					'http://localhost:7998/deleteItem',
+					_form
+				).then(function (res) {
+					console.log(res);
+					_this.updateEchart();
+				}).catch(function (error) { // 请求失败处理
+					console.log(error);
+				});
+			},
+			createItem() {
+				//发送 post 请求
+				var _form = JSON.stringify(this.form);
+				console.log(_form);
+				_this = this;
+				axios.post(
+					'http://localhost:7998/createItem',
+					_form
+				).then(function (res) {
+					console.log(res);
+					_this.updateEchart();
+				}).catch(function (error) { // 请求失败处理
+					console.log(error);
+				});
+			},
+
+			updateEchart() {
+				axios.post(
+					'http://localhost:7998/getBTree'
+				).then(function (res) {
+					console.log(res);
+					var option = optionTemplate;
+					option.series[0].data[0] = res.data;
+					myChart.setOption(option);
+				}).catch(function (error) { // 请求失败处理
+					console.log(error);
+				});
+				this.updateTable();
+			},
+			updateTable() {
+				var _this = this;
+				axios.post(
+					'http://localhost:7998/getTable'
+				).then(function (res) {
+					console.log(res);
+					_this.tableData = res.data.table;
+				}).catch(function (error) { // 请求失败处理
+					console.log(error);
+				});
+
+			}
+		}
+	})
+
+
+
+
+	var myChart = echarts.init(document.getElementById("display"));
+	myChart.setOption(optionTemplate);
+
+</script>
+
+</html>
